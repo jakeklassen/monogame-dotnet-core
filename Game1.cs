@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace monogame_demo
 {
-  public class Bunny
+  public class Player
   {
     public Vector2 velocity = Vector2.Zero;
     public Vector2 position = Vector2.Zero;
@@ -16,9 +16,12 @@ namespace monogame_demo
   public class Game1 : Game
   {
 
-    const int TargetWidth = 384;
-    const int TargetHeight = 216;
+    const int TargetWidth = 480; // 384
+    const int TargetHeight = 270; // 216
     Matrix Scale;
+
+    float scaleX = 0;
+    float scaleY = 0;
 
     GraphicsDeviceManager graphics;
     SpriteBatch spriteBatch;
@@ -26,9 +29,10 @@ namespace monogame_demo
     SimpleFps fps = new SimpleFps();
     SpriteFont font;
 
-    private Texture2D bunnyTexture;
+    private Texture2D playerTexture;
+    private Texture2D mapTexture;
 
-    private Bunny bunny = new Bunny();
+    private Player player = new Player();
 
     private double last = 0;
 
@@ -50,10 +54,9 @@ namespace monogame_demo
 
     protected override void Initialize()
     {
-      // TODO: Add your initialization logic here
+      scaleX = graphics.PreferredBackBufferWidth / TargetWidth;
+      scaleY = graphics.PreferredBackBufferHeight / TargetHeight;
 
-      float scaleX = graphics.PreferredBackBufferWidth / TargetWidth;
-      float scaleY = graphics.PreferredBackBufferHeight / TargetHeight;
       Scale = Matrix.CreateScale(new Vector3(scaleX, scaleY, 1));
 
       base.Initialize();
@@ -63,14 +66,14 @@ namespace monogame_demo
     {
       spriteBatch = new SpriteBatch(GraphicsDevice);
 
-      // TODO: use this.Content to load your game content here
       font = Content.Load<SpriteFont>("PressStart2P");
-      bunnyTexture = Content.Load<Texture2D>("bunny");
+      playerTexture = Content.Load<Texture2D>("megaman-left");
+      mapTexture = Content.Load<Texture2D>("map");
 
-      bunny.position.X = 20;
-      bunny.position.Y = TargetHeight / 2 - bunnyTexture.Height / 2;
-      bunny.velocity.X = 60;
-      bunny.velocity.Y = 60;
+      player.position.X = 20;
+      player.position.Y = TargetHeight / 2 - playerTexture.Height / 2;
+      player.velocity.X = 60;
+      player.velocity.Y = 60;
     }
 
     protected override void Update(GameTime gameTime)
@@ -78,39 +81,37 @@ namespace monogame_demo
       if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
         Exit();
 
-      bunny.direction.X = 0;
-      bunny.direction.Y = 0;
+      player.direction.X = 0;
+      player.direction.Y = 0;
 
       if (Keyboard.GetState().IsKeyDown(Keys.Left))
       {
-        bunny.direction.X = -1;
+        player.direction.X = -1;
       }
       else if (Keyboard.GetState().IsKeyDown(Keys.Right))
       {
-        bunny.direction.X = 1;
+        player.direction.X = 1;
       }
 
       if (Keyboard.GetState().IsKeyDown(Keys.Up))
       {
-        bunny.direction.Y = -1;
+        player.direction.Y = -1;
       }
       else if (Keyboard.GetState().IsKeyDown(Keys.Down))
       {
-        bunny.direction.Y = 1;
+        player.direction.Y = 1;
       }
 
-
-      // TODO: Add your update logic here
       fps.Update(gameTime);
 
       var now = gameTime.TotalGameTime.TotalSeconds;
       var elapsed = now - last;
       var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-      bunny.lastPosition.X = bunny.position.X;
-      bunny.lastPosition.Y = bunny.position.Y;
-      bunny.position.X += (bunny.velocity.X * delta) * bunny.direction.X;
-      bunny.position.Y += (bunny.velocity.Y * delta) * bunny.direction.Y;
+      player.lastPosition.X = player.position.X;
+      player.lastPosition.Y = player.position.Y;
+      player.position.X += player.velocity.X * delta * player.direction.X;
+      player.position.Y += player.velocity.Y * delta * player.direction.Y;
 
       last = now;
 
@@ -123,16 +124,17 @@ namespace monogame_demo
 
       GraphicsDevice.Clear(Color.Gray);
 
-      // TODO: Add your drawing code here
       // spriteBatch.Begin(SpriteSortMode.Deferred, null, SamplerState.PointClamp, null, null, null, null);
       spriteBatch.Begin(SpriteSortMode.Immediate, null, SamplerState.PointClamp, null, null, null, Scale);
 
       // Draw the fps msg
       // fps.DrawFps(spriteBatch, font, new Vector2(10f, 10f), Color.White);
 
-      // spriteBatch.DrawString(font, frameRate.ToString(), new Vector2(10f, 200f), Color.White);
+      spriteBatch.Draw(mapTexture, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
 
-      spriteBatch.Draw(bunnyTexture, bunny.position, null, Color.White, bunny.rotation, new Vector2(13, 18.5f), 1f, SpriteEffects.None, 0f);
+      spriteBatch.Draw(playerTexture, player.position, null, Color.White, player.rotation, new Vector2(12, 12), 1f, SpriteEffects.None, 0f);
+
+      spriteBatch.DrawString(font, frameRate.ToString(), new Vector2(10f, 10f), Color.White);
 
       spriteBatch.End();
 
